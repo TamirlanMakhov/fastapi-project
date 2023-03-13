@@ -30,8 +30,8 @@ app.dependency_overrides[get_db] = override_get_db
 @pytest.fixture
 def client():
     Base.metadata.create_all(bind=engine)  # create tables
-    yield TestClient(app)  # implements tests as a fixture in functions
     Base.metadata.drop_all(bind=engine)  # drop tables, so there will be not duplicates every time we run tests
+    yield TestClient(app)  # implements tests as a fixture in functions
 
 
 def test_root(client):
