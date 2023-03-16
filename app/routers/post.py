@@ -9,7 +9,7 @@ router = APIRouter(prefix='/posts', tags=['Posts'])
 
 @router.get('/', response_model=list[schemas.PostVote])
 def get_posts(db: Session = Depends(get_db),
-              current_user=Depends(oauth2.get_current_user),
+              current_user=Depends(oauth2.auth_handler.get_current_user),
               limit: int = Query(default=10, title='limit', description='how many items to show'),
               skip: int = Query(default=0, title='skip', description='how many items to skip'),
               search: str | None = Query(default=..., title='search string', description='search pattern')):
@@ -21,7 +21,7 @@ def get_posts(db: Session = Depends(get_db),
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.Post)
 def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db),
-                 current_user=Depends(oauth2.get_current_user)):
+                 current_user=Depends(oauth2.auth_handler.get_current_user)):
     """user should be login before he can create posts, so user_id is dependency"""
 
     created_post = models.Post(**post.dict(), owner_id=current_user.id)
@@ -34,7 +34,7 @@ def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db),
 
 
 @router.get("/{my_id}", response_model=schemas.PostVote)
-def get_post_by_id(my_id: int, db: Session = Depends(get_db), current_user=Depends(oauth2.get_current_user)):
+def get_post_by_id(my_id: int, db: Session = Depends(get_db), current_user=Depends(oauth2.auth_handler.get_current_user)):
     posts = db.query(models.Post, func.count(models.Vote.post_id)
                      .label('votes')).join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True) \
         .group_by(models.Post.id).filter(models.Post.id == my_id).first()
@@ -45,7 +45,7 @@ def get_post_by_id(my_id: int, db: Session = Depends(get_db), current_user=Depen
 
 
 @router.delete("/{my_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_post(my_id: int, db: Session = Depends(get_db), current_user=Depends(oauth2.get_current_user)):
+def delete_post(my_id: int, db: Session = Depends(get_db), current_user=Depends(oauth2.auth_handler.get_current_user)):
     post_query = db.query(models.Post).filter(models.Post.id == my_id)
 
     post = post_query.first()
@@ -61,7 +61,7 @@ def delete_post(my_id: int, db: Session = Depends(get_db), current_user=Depends(
 
 @router.put("/{my_id}", response_model=schemas.Post)
 def update_post(my_id: int, post: schemas.PostCreate, db: Session = Depends(get_db),
-                current_user=Depends(oauth2.get_current_user)):
+                current_user=Depends(oauth2.auth_handler.get_current_user)):
     post_query = db.query(models.Post).filter(models.Post.id == my_id)
     actual_post = post_query.first()
 

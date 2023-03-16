@@ -10,7 +10,7 @@ router = APIRouter(
 
 @router.post('/', status_code=status.HTTP_201_CREATED)
 def vote(current_vote: schemas.Vote, db: Session = Depends(database.get_db),
-         current_user=Depends(oauth2.get_current_user)):
+         current_user=Depends(oauth2.auth_handler.get_current_user)):
 
     post = db.query(models.Post).filter(models.Post.id == current_vote.post_id).first()
     if not post:

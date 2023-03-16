@@ -19,6 +19,6 @@ def login(user_credentials: OAuth2PasswordRequestForm = Depends(), db: Session =
     if not is_correct_psw:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f'wrong combination of login and password')
 
-    access_token = oauth2.create_access_token(data={"user_id": user.id})  # информация для payload
+    access_token = oauth2.auth_handler.create_access_token(data={"user_id": user.id})  # информация для payload
 
     return {"access_token": access_token, "token_type": "bearer"}
