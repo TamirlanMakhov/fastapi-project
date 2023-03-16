@@ -1,15 +1,18 @@
 from .. import models, schemas, oauth2
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from fastapi import status, HTTPException, Depends, APIRouter
+from fastapi import status, HTTPException, Depends, APIRouter, Query
 from ..database import get_db
 
 router = APIRouter(prefix='/posts', tags=['Posts'])
 
 
 @router.get('/', response_model=list[schemas.PostVote])
-def get_posts(db: Session = Depends(get_db), current_user=Depends(oauth2.get_current_user), limit: int = 10,
-              skip: int = 0, search: str | None = ''):
+def get_posts(db: Session = Depends(get_db),
+              current_user=Depends(oauth2.get_current_user),
+              limit: int = Query(default=10, title='limit', description='how many items to show'),
+              skip: int = Query(default=0, title='skip', description='how many items to skip'),
+              search: str | None = Query(default=..., title='search string', description='search pattern')):
     posts = db.query(models.Post, func.count(models.Vote.post_id)
                      .label('votes')).join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True) \
         .group_by(models.Post.id).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
