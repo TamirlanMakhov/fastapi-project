@@ -25,6 +25,8 @@ class UserResponse(BaseModel):
 class Post(BaseModel):
     id: int
     created_at: datetime
+    title: str
+    content: str
     owner_id: int
     owner: UserResponse
 
