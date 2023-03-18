@@ -1,14 +1,17 @@
+from typing import Optional
+
 from .. import models, schemas, utils
-from sqlalchemy.orm import Session
-from fastapi import FastAPI, status, HTTPException, Response, Depends, APIRouter
+from sqlalchemy.orm import Session, Query
+from fastapi import FastAPI, status, HTTPException, Response, Depends, APIRouter, Form
 from ..database import get_db
 
 
 router = APIRouter(prefix='/users', tags=['Users'])
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.UserResponse)
+@router.post("/signup", status_code=status.HTTP_201_CREATED, response_model=schemas.UserResponse)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    print(user)
     hash_psw = utils.get_hash(user.password)
     user.password = hash_psw
 
@@ -18,6 +21,8 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db.refresh(new_user)
 
     return new_user
+
+
 
 
 @router.get("/{my_id}", response_model=schemas.UserResponse)
